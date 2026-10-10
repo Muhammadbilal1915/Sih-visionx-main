@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForensicLens — AI DVR/NVR Forensic Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') if url_for is defined else '/static/style.css' }}?v=20260901_0246">
+  <style>
+    /* Universal Anti-White Browser Reset - Applied Instantly */
+    input[type="text"],
+    input[type="search"],
+    input[type="number"],
+    select,
+    textarea {
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 6px !important;
+      padding: 0.55rem 0.85rem !important;
+      font-family: inherit !important;
+      font-size: 0.85rem !important;
+      outline: none !important;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    input[type="text"]:focus,
+    input[type="search"]:focus,
+    select:focus {
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25), inset 0 1px 3px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+      background-repeat: no-repeat !important;
+      background-position: right 0.75rem center !important;
+      background-size: 14px 14px !important;
+      padding-right: 2.2rem !important;
+      cursor: pointer !important;
+    }
+
+    select option {
+      background-color: #0f172a !important;
+      color: #f8fafc !important;
+    }
+
+    /* Universal Button Reset - No White Browser Boxes */
+    button:not(.nav-item):not(.drawer-close):not(.view-btn),
+    .btn {
+      -webkit-appearance: none !important;
+      -moz-appearance: none !important;
+      appearance: none !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.45rem !important;
+      padding: 0.55rem 1.1rem !important;
+      border-radius: 6px !important;
+      font-weight: 600 !important;
+      font-size: 0.82rem !important;
+      cursor: pointer !important;
+      text-decoration: none !important;
+      background: #1e293b !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #f8fafc !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35) !important;
+      transition: all 0.18s ease !important;
+    }
+
+    button:not(.nav-item):not(.drawer-close):not(.view-btn):hover,
+    .btn:hover {
+      background: #334155 !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3) !important;
+    }
+
+    /* Primary Action Buttons */
+    .btn-primary,
+    #send-query-btn,
+    #page-send-query-btn,
+    #btn-usb-simulate,
+    #run-sanitization-btn {
+      background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%) !important;
+      border: 1px solid rgba(56, 189, 248, 0.7) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      box-shadow: 0 0 14px rgba(14, 165, 233, 0.45) !important;
+    }
+
+    .btn-primary:hover,
+    #send-query-btn:hover,
+    #page-send-query-btn:hover,
+    #btn-usb-simulate:hover,
+    #run-sanitization-btn:hover {
+      background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%) !important;
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.7) !important;
+      transform: translateY(-1.5px) !important;
+    }
+
+    /* Filter Pills */
+    .filter-pills {
+      display: flex !important;
+      gap: 0.35rem !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+    }
+
+    .filter-pill {
+      background: #1e293b !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #94a3b8 !important;
+      font-size: 0.75rem !important;
+      padding: 0.35rem 0.8rem !important;
+      border-radius: 9999px !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      font-weight: 500 !important;
+    }
+
+    .filter-pill:hover {
+      background: #334155 !important;
+      color: #ffffff !important;
+      border-color: #38bdf8 !important;
+    }
+
+    .filter-pill.active {
+      background: linear-gradient(135deg, #0ea5e9, #6366f1) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
+    }
+
+    /* Export Links Styled As Real Buttons */
+    .export-buttons a {
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 0.45rem !important;
+      padding: 0.5rem 0.9rem !important;
+      border-radius: 6px !important;
+      font-weight: 600 !important;
+      font-size: 0.8rem !important;
+      text-decoration: none !important;
+      background: #1e293b !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      color: #38bdf8 !important;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+      transition: all 0.18s ease !important;
+    }
+
+    .export-buttons a:hover {
+      background: #334155 !important;
+      border-color: #38bdf8 !important;
+      color: #ffffff !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3) !important;
+    }
+
+    /* Quick Prompt Pills */
+    .quick-prompt-tag {
+      background: rgba(30, 41, 59, 0.9) !important;
+      border: 1px solid rgba(56, 189, 248, 0.3) !important;
+      padding: 0.35rem 0.75rem !important;
+      border-radius: 9999px !important;
+      font-size: 0.75rem !important;
+      color: #38bdf8 !important;
+      cursor: pointer !important;
+      transition: all 0.15s ease !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      font-weight: 600 !important;
+    }
+
+    .quick-prompt-tag:hover {
+      background: rgba(56, 189, 248, 0.25) !important;
+      color: #ffffff !important;
+      border-color: #38bdf8 !important;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4) !important;
+      transform: translateY(-1px) !important;
+    }
+
+    /* Right-Side Half-Screen AI Agent Drawer */
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 99998;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .drawer-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .query-drawer {
+      position: fixed !important;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 50vw !important;
+      min-width: 460px !important;
+      max-width: 900px !important;
+      height: 100vh !important;
+      max-height: 100vh !important;
+      background: rgba(10, 15, 29, 0.98) !important;
+      border-left: 2px solid rgba(56, 189, 248, 0.4) !important;
+      backdrop-filter: blur(28px) !important;
+      z-index: 99999 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.85) !important;
+      transform: translateX(105%) !important;
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-sizing: border-box !important;
+    }
+
+    @media (max-width: 992px) {
+      .query-drawer {
+        width: 75vw !important;
+        min-width: 380px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .query-drawer {
+        width: 100vw !important;
+        min-width: 100vw !important;
+        max-width: 100vw !important;
+        border-left: none !important;
+      }
+      .drawer-header {
+        padding: 0.85rem 1rem !important;
+      }
+      .drawer-quick-prompts {
+        padding: 0.5rem 0.85rem !important;
+      }
+      .query-chat-history {
+        padding: 0.85rem !important;
+      }
+      .query-input-bar {
+        padding: 0.75rem 0.85rem !important;
+      }
+    }
+
+    .query-drawer.open {
+      transform: translateX(0) !important;
+    }
+
+    .drawer-header {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      padding: 1rem 1.25rem !important;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)) !important;
+      border-bottom: 1px solid var(--border-subtle) !important;
+      flex-shrink: 0 !important;
+    }
+
+    .drawer-title {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0.6rem !important;
+      font-weight: 700 !important;
+      font-size: 1rem !important;
+      color: var(--text-primary) !important;
+    }
+
+    .drawer-close {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border: 1px solid var(--border-subtle) !important;
+      color: var(--text-secondary) !important;
+      font-size: 1.1rem !important;
+      width: 32px !important;
+      height: 32px !important;
+      border-radius: 50% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+    }
+
+    .drawer-close:hover {
+      background: rgba(244, 63, 94, 0.25) !important;
+      border-color: var(--accent-rose) !important;
+      color: #ffffff !important;
+    }
+
+    .drawer-quick-prompts {
+      display: flex !important;
+      flex-wrap: wrap !important;
+      gap: 0.4rem !important;
+      padding: 0.75rem 1.25rem !important;
+      background: rgba(15, 23, 42, 0.6) !important;
+      border-bottom: 1px solid var(--border-subtle) !important;
+      flex-shrink: 0 !important;
+    }
+
+    .query-chat-history {
+      flex: 1 !important;
+      min-height: 0 !important;
+      overflow-y: auto !important;
+      padding: 1.25rem !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 1rem !important;
+    }
+
+    .query-input-bar {
+      display: flex !important;
+      gap: 0.6rem !important;
+      padding: 1rem 1.25rem !important;
+      background: rgba(15, 23, 42, 0.95) !important;
+      border-top: 1px solid var(--border-subtle) !important;
+      flex-shrink: 0 !important;
+    }
+
+    .query-input-bar input {
+      flex: 1 !important;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    if (window.location.protocol === 'file:') {
+      window.addEventListener('DOMContentLoaded', function() {
+        var banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#e11d48;color:#ffffff;padding:16px 24px;text-align:center;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;font-size:15px;font-weight:600;z-index:999999;box-shadow:0 4px 20px rgba(0,0,0,0.6);border-bottom:3px solid #be123c;line-height:1.6;';
+        banner.innerHTML = '⚠️ <strong>Direct File View Detected:</strong> You opened <code>index.html</code> directly from the filesystem.<br>To view the styled dashboard with live AI intelligence and video playback, run <code>python dashboard.py</code> in terminal and open <a href="http://127.0.0.1:5000" style="color:#fef08a;text-decoration:underline;margin-left:6px;font-weight:700;">http://127.0.0.1:5000</a> in your browser.';
+        document.body.prepend(banner);
+      });
+    }
+  </script>
+  <!-- Starting Investigator Authentication Gateway (Login & Signup) -->
+  <div class="auth-gateway-overlay" id="auth-gateway-overlay">
+    <div class="auth-gateway-card">
+      <div class="auth-brand-header">
+        <div class="auth-brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+        </div>
+        <h1 class="auth-brand-title">FORENSICLENS</h1>
+        <p class="auth-brand-sub">AI DVR/NVR Digital Forensics Platform (SIH 2026 PS 26150)</p>
+        <div class="portal-badge investigator" id="gw-portal-badge">
+          <span>🇮🇳</span>
+          <span id="gw-portal-badge-text">INVESTIGATOR ACCESS GATEWAY</span>
+        </div>
+      </div>
+
+      <!-- 3 Auth Fields: Admin, User Login, Investigator Login -->
+      <div class="auth-quad-modes-bar auth-tri-modes-bar" id="gw-auth-quad-modes-bar">
+        <button class="quad-mode-btn admin" id="gw-btn-mode-admin" type="button" data-mode="admin" data-auth-field="admin" title="Admin Credential Provisioning">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+          <span class="quad-mode-label">Admin</span>
+        </button>
+        <button class="quad-mode-btn user userlogin" id="gw-btn-mode-user-login" type="button" data-mode="user_login" data-auth-field="userlogin" title="User Login">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          <span class="quad-mode-label">User Login</span>
+        </button>
+        <button class="quad-mode-btn active investigator investigatorlogin" id="gw-btn-mode-investigator-login" type="button" data-mode="investigator_login" data-auth-field="investigatorlogin" title="Investigator Login">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span class="quad-mode-label">Investigator Login</span>
+        </button>
+      </div>
+
+      <div class="auth-mode-header-info" id="gw-auth-mode-header-info" style="margin-bottom:1.15rem;text-align:center;">
+        <span id="gw-auth-mode-title" style="font-size:0.95rem;font-weight:700;color:#ffffff;display:block;margin-bottom:0.2rem;">Investigator Login (Sign In)</span>
+        <span id="gw-auth-mode-desc" style="font-size:0.75rem;color:#94a3b8;">Case Overview, Video Intelligence, Timeline, Graph &amp; Section 65B Report (or Live Camera Surveillance for User Investigator)</span>
+      </div>
+
+      <div class="auth-alert error" id="gateway-auth-alert" style="display:none;">
+        <span id="gateway-auth-alert-text"></span>
+      </div>
+
+      <!-- Login Form -->
+      <form id="gateway-login-form">
+        <div class="auth-field">
+          <label class="auth-label" for="gw-login-id">
+            <span id="gw-login-id-label">Official Email or Badge ID</span>
+          </label>
+          <div class="auth-input-wrapper">
+            <span class="auth-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+            <input type="text" id="gw-login-id" class="auth-input" placeholder="e.g. investigator@cbi.gov.in or IND-26150" required value="investigator@cbi.gov.in">
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="gw-login-pass">Passphrase / Password</label>
+          <div class="auth-input-wrapper">
+            <span class="auth-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input type="password" id="gw-login-pass" class="auth-input" placeholder="Enter investigator passphrase" required value="Investigator@2026">
+          </div>
+        </div>
+
+        <button type="submit" class="auth-btn-primary" id="gw-btn-login">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span id="gw-btn-login-text">Sign In to Workstation</span>
+        </button>
+
+        <div class="auth-divider">Or Quick Access</div>
+
+        <button type="button" class="auth-demo-btn" id="gw-btn-demo">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          <span id="gw-btn-demo-text">⚡ 1-Click Demo Sign In (Insp. Sharma • CBI Lead)</span>
+        </button>
+      </form>
+
+      <!-- Admin Provisioning Form (Replaces public signup) -->
+      <form id="gateway-admin-form" style="display:none;">
+        <div class="auth-field">
+          <label class="auth-label">
+            <span>Target Account Role</span>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px;">
+            <button type="button" class="admin-role-btn active" id="gw-admin-role-user" data-role="user_investigator" style="padding:0.65rem 0.5rem;background:rgba(16,185,129,0.22);border:1px solid #10b981;color:#ffffff;border-radius:6px;font-weight:700;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.35rem;">
+              <span>📹</span> <span>User Account</span>
+            </button>
+            <button type="button" class="admin-role-btn" id="gw-admin-role-inv" data-role="investigator" style="padding:0.65rem 0.5rem;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.12);color:#94a3b8;border-radius:6px;font-weight:700;font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.35rem;">
+              <span>🛡️</span> <span>Investigator Account</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="gw-admin-target-email">
+            <span id="gw-admin-target-email-label">Authorized User Email</span>
+          </label>
+          <div class="auth-input-wrapper">
+            <span class="auth-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            </span>
+            <input type="email" id="gw-admin-target-email" class="auth-input" placeholder="e.g. user@forensiclens.gov.in" required value="user@forensiclens.gov.in">
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="gw-admin-target-password">
+            <span id="gw-admin-target-password-label">Authorized User Password</span>
+          </label>
+          <div class="auth-input-wrapper">
+            <span class="auth-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input type="password" id="gw-admin-target-password" class="auth-input" placeholder="Set password (min 6 chars)" required value="User@2026">
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label class="auth-label" for="gw-admin-master-key">
+            <span>Admin Master Passkey</span>
+          </label>
+          <div class="auth-input-wrapper">
+            <span class="auth-input-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21 2-2 2m-1.5 1.5L14 9l-1.5-1.5L10 10l2 2-6 6H2v-4l6-6 2 2 2.5-2.5L11 8l3.5-3.5 2 2Z"/></svg>
+            </span>
+            <input type="password" id="gw-admin-master-key" class="auth-input" placeholder="Enter Admin Master Key" required value="Admin@2026">
+          </div>
+        </div>
+
+        <button type="submit" class="auth-btn-primary" id="gw-btn-admin-submit" style="background:linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%) !important;border-color:#a855f7 !important;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+          <span id="gw-btn-admin-submit-text">Authorize &amp; Issue Credentials</span>
+        </button>
+
+        <div class="auth-divider">Currently Authorized Accounts</div>
+
+        <div id="gw-admin-authorized-roster" style="background:rgba(8,12,20,0.7);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.6rem 0.8rem;font-size:0.75rem;">
+          <div style="display:flex;justify-content:space-between;padding:0.25rem 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="color:#34d399;font-weight:700;">📹 User (Live Camera):</span>
+            <span id="gw-admin-roster-user" style="font-family:monospace;color:#e2e8f0;">user@forensiclens.gov.in</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.25rem 0;margin-top:0.25rem;">
+            <span style="color:#38bdf8;font-weight:700;">🛡️ Investigator:</span>
+            <span id="gw-admin-roster-inv" style="font-family:monospace;color:#e2e8f0;">investigator@cbi.gov.in</span>
+          </div>
+        </div>
+      </form>
+
+      <div class="auth-compliance-footer">
+        🔒 Standardized under ISO/IEC 27037 & Section 65B Indian Evidence Act guidelines.
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/><path d="M11 8v6"/><path d="M8 11h6"/></svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">FORENSICLENS</span>
+          <span class="brand-sub">SIH 2026 PS 26150</span>
+        </div>
+        <button class="sidebar-mobile-close" id="sidebar-mobile-close" aria-label="Close navigation menu">✕</button>
+      </div>
+
+      <div class="case-badge-pill" id="sidebar-case-badge">
+        <span class="indicator-dot"></span>
+        <span id="sidebar-case-id">Loading Case...</span>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="overview">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          Case Overview
+        </button>
+        <button class="nav-item" data-tab="report">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/><polyline points="14 2 14 8 20 8"/><path d="M2 15h10"/><path d="m9 18 3-3-3-3"/></svg>
+          Forensic Case Report
+          <span class="live-nav-badge" style="background:rgba(16,185,129,0.2);color:#34d399;">SIH 26150</span>
+        </button>
+        <button class="nav-item" data-tab="evidence">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+          Evidence Inventory
+        </button>
+        <button class="nav-item" data-tab="video">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+          Video Intelligence
+        </button>
+        <button class="nav-item" data-tab="events">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Forensic Events
+        </button>
+        <button class="nav-item" data-tab="graph">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+          Investigation Graph
+        </button>
+        <button class="nav-item" data-tab="timeline">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Forensic Timeline (IST)
+        </button>
+        <button class="nav-item" data-tab="integrity">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          Integrity & Ledger
+        </button>
+        <button class="nav-item" data-tab="ml">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="M2 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="M12 22v-4"/><path d="m19.07 19.07-2.83-2.83"/><path d="M22 12h-4"/><path d="m19.07 4.93-2.83 2.83"/></svg>
+          ML Intelligence
+        </button>
+        <button class="nav-item" data-tab="sanitization">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          Secure Erasure (Test)
+        </button>
+        <button class="nav-item nav-item-live" data-tab="usb">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13v-2M14 13v-2M7 10h10v7a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-7Z"/><path d="M10 10V5a2 2 0 0 1 4 0v5"/></svg>
+          Live USB Monitor
+          <span class="live-nav-badge" id="usb-live-pill">LIVE</span>
+        </button>
+        <button class="nav-item nav-item-live" data-tab="live-camera">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Live Camera Surveillance
+          <span class="live-nav-badge" style="background:rgba(239,68,68,0.25);color:#f87171;border:1px solid rgba(239,68,68,0.5);">LIVE</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="query-launcher-btn" id="open-query-drawer-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Grounded Q&A
+        </button>
+        <div class="investigator-profile-card" id="sidebar-profile-card">
+          <div class="profile-info-row">
+            <div class="profile-avatar" id="sidebar-user-avatar">IS</div>
+            <div class="profile-details">
+              <span class="profile-name" id="sidebar-user-name">Insp. Sharma</span>
+              <span class="profile-badge" id="sidebar-user-badge">IND-26150</span>
+            </div>
+          </div>
+          <button class="btn-lock-station" id="btn-lock-station" title="Lock Station & Sign Out">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle navigation menu" title="Open Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="header-title-group">
+            <h1 id="header-title">Case Overview</h1>
+            <span class="header-subtitle" id="header-investigation-title">ForensicLens Digital Evidence Analysis</span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="investigator-header-pill" id="header-investigator-pill">
+            <span class="investigator-dot"></span>
+            <span id="header-investigator-name">Insp. A. K. Sharma</span>
+            <span class="badge badge-cyan" id="header-investigator-badge" style="font-size:0.7rem;padding:0.15rem 0.45rem;">IND-26150</span>
+            <button class="header-logout-btn" id="header-logout-btn" title="Sign Out / Lock Station">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
+          <div class="status-pill status-match" id="header-tamper-pill">
+            <span class="status-icon">✓</span>
+            <span id="header-tamper-text">CHAIN_VALID</span>
+          </div>
+          <div class="status-pill status-info">
+            <span id="header-timestamp">UTC</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB 1: CASE OVERVIEW -->
+      <section class="tab-pane active" id="pane-overview">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon cyan"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/></svg></div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-evidence-count">0</span>
+              <span class="metric-label">Source Evidence Files</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg></div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-video-count">0</span>
+              <span class="metric-label">Surveillance Feeds</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon amber"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-event-count">0</span>
+              <span class="metric-label">Forensic Review Events</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/></svg></div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-high-priority-count">0</span>
+              <span class="metric-label">High Priority Findings</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-grid-2col">
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>Integrity & Chain of Custody</h2>
+              <span class="badge badge-success" id="overview-integrity-badge">VERIFIED</span>
+            </div>
+            <div class="integrity-status-list">
+              <div class="status-row">
+                <span class="status-title">Source Cryptographic SHA-256 Hash Match</span>
+                <span class="status-tag tag-success" id="ov-source-status">MATCH</span>
+              </div>
+              <div class="status-row">
+                <span class="status-title">Append-Only Hash-Linked Chain of Custody</span>
+                <span class="status-tag tag-success" id="ov-chain-status">CHAIN_VALID</span>
+              </div>
+              <div class="status-row">
+                <span class="status-title">Local Private Provenance Ledger</span>
+                <span class="status-tag tag-success" id="ov-ledger-status">CHAIN_VALID</span>
+              </div>
+              <div class="status-row">
+                <span class="status-title">Evidence Tamper Verification Status</span>
+                <span class="status-tag tag-success" id="ov-tamper-status">MATCH</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>Top Forensic Triage Highlights</h2>
+              <span class="badge badge-info">Automated Analysis</span>
+            </div>
+            <div class="triage-highlights-list" id="overview-triage-list">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: EVIDENCE INVENTORY -->
+      <section class="tab-pane" id="pane-evidence">
+        <div class="glass-panel full-height">
+          <div class="panel-header">
+            <h2>Digital Evidence Registry</h2>
+            <div class="table-controls">
+              <input type="text" id="evidence-search" placeholder="Search evidence files or hashes..." class="search-input">
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="evidence-table">
+              <thead>
+                <tr>
+                  <th>Evidence ID</th>
+                  <th>Filename</th>
+                  <th>Type</th>
+                  <th>Size (Bytes)</th>
+                  <th>SHA-256 Digest</th>
+                  <th>Integrity</th>
+                </tr>
+              </thead>
+              <tbody id="evidence-table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: VIDEO INTELLIGENCE -->
+      <section class="tab-pane" id="pane-video">
+        <div class="video-workspace-grid">
+          <div class="glass-panel video-player-card">
+            <div class="panel-header">
+              <div><h2 id="video-filename-title">Surveillance Feed</h2><p class="panel-desc" id="video-feed-count">Loading camera feeds…</p></div>
+              <div class="table-controls" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                <select id="video-feed-selector" class="select-input" aria-label="Select surveillance feed"></select>
+                <button id="btn-remove-video" class="btn btn-secondary" style="color:#f87171;border-color:rgba(239,68,68,0.4);display:flex;align-items:center;gap:0.35rem;" title="Remove selected video feed">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <span>Remove Video</span>
+                </button>
+                <span class="badge badge-cyan" id="video-resolution-badge">1920x1080 @ 30fps</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <input id="video-upload-input" type="file" accept=".mp4,.mp3,.png,.jpg,.jpeg,video/mp4,audio/mpeg,image/png,image/jpeg" multiple class="text-input" aria-label="Add CCTV video exhibits">
+              <button id="upload-videos-btn" class="btn btn-secondary">Add & Analyze Feeds</button>
+            </div>
+            <div id="video-upload-status" class="panel-desc"></div>
+            <div class="video-container">
+              <video id="forensic-video-player" controls preload="metadata">
+                <source id="forensic-video-source" src="" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            <div class="video-metadata-bar" id="video-meta-bar">
+              <!-- Video metadata items -->
+            </div>
+          </div>
+
+          <div class="glass-panel video-events-sidebar">
+            <div class="panel-header">
+              <h2>Synchronized Event Markers</h2>
+              <span class="badge badge-amber" id="event-marker-count">0 Events</span>
+            </div>
+            <div class="event-markers-list" id="video-event-markers">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: FORENSIC EVENTS -->
+      <section class="tab-pane" id="pane-events">
+        <div class="glass-panel full-height">
+          <div class="panel-header">
+            <h2>Aggregated Forensic Review Events</h2>
+            <div class="table-controls">
+              <select id="event-priority-filter" class="select-input">
+                <option value="all">All Priorities</option>
+                <option value="high">High Priority Only</option>
+                <option value="medium">Medium Priority Only</option>
+                <option value="low">Low Priority Only</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-container">
+            <table class="data-table" id="events-table">
+              <thead>
+                <tr>
+                  <th>Event ID</th>
+                  <th>Time (s)</th>
+                  <th>Event Type</th>
+                  <th>Assertion</th>
+                  <th>Priority</th>
+                  <th>Anomaly Score</th>
+                  <th>Explanation</th>
+                </tr>
+              </thead>
+              <tbody id="events-table-body">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+          <div class="glass-panel" style="margin-top:1rem;"><div class="panel-header"><h2>Investigator Review & Case Notes</h2></div><div id="review-panel" class="triage-highlights-list"></div><div class="form-row"><input id="case-note" class="text-input" placeholder="Add an investigator note..."><button id="add-note-btn" class="btn btn-secondary">Save note</button></div><div id="case-notes" class="triage-highlights-list"></div></div>
+        </div>
+      </section>
+
+      <!-- TAB 5: INVESTIGATION GRAPH -->
+      <section class="tab-pane" id="pane-graph">
+        <div class="graph-workspace-split">
+          <!-- HALF 1: EVIDENCE RELATIONSHIP GRAPH VISUALIZER -->
+          <div class="glass-panel graph-canvas-card">
+            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;border-bottom:1px solid var(--border-subtle);flex-shrink:0;">
+              <div>
+                <h2 style="font-size:1.1rem;font-weight:700;margin:0 0 0.25rem 0;">Evidence Relationship Graph</h2>
+                <p class="panel-desc" style="margin:0;font-size:0.75rem;color:var(--text-muted);">Traceable DAG: Source Evidence &rarr; Videos &rarr; Tracks &rarr; Forensic Events &rarr; Correlations &rarr; Report</p>
+              </div>
+              <div class="graph-legend-header" style="display:flex;align-items:center;gap:0.85rem;font-size:0.72rem;font-family:var(--font-mono);color:var(--text-secondary);flex-shrink:0;">
+                <span style="display:flex;align-items:center;gap:0.35rem;">
+                  <span style="display:inline-block;width:18px;height:2px;background:#38bdf8;"></span>
+                  Detected Fact
+                </span>
+                <span style="display:flex;align-items:center;gap:0.35rem;">
+                  <span style="display:inline-block;width:18px;height:0px;border-top:2px dashed #f59e0b;"></span>
+                  Inferred Association
+                </span>
+              </div>
+            </div>
+
+            <!-- Main Graph Canvas Workspace -->
+            <div class="graph-workspace-dag" id="graph-workspace-dag">
+              <div class="graph-dag-viewport" id="graph-viewport-container">
+                <!-- Populated via SVG in JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- HALF 2: INVESTIGATION TOKENS & NEXUS LINKS -->
+          <div class="glass-panel graph-tokens-card">
+            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:center;padding:0.75rem 1rem;border-bottom:1px solid var(--border-subtle);flex-shrink:0;">
+              <div>
+                <h2 style="font-size:1.1rem;font-weight:700;margin:0 0 0.25rem 0;">Investigation Tokens</h2>
+                <p class="panel-desc" style="margin:0;font-size:0.75rem;color:var(--text-muted);">DAG pipeline stage tokens &amp; event-to-correlation nexus linkages</p>
+              </div>
+              <span class="badge badge-cyan" style="font-size:0.72rem;padding:0.25rem 0.6rem;white-space:nowrap;">Multi-Modal Ledger</span>
+            </div>
+
+            <div class="graph-tokens-scroll-area">
+              <!-- Token Cards: Explaining what the graph describes in simple terms -->
+              <div class="tokens-group-block">
+                <div class="tokens-section-label" style="font-size:0.75rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.45rem;display:flex;align-items:center;gap:0.4rem;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                  <span>DAG Pipeline Stage Tokens</span>
+                </div>
+                <div class="graph-token-cards" id="graph-token-cards">
+                  <div class="graph-token-card">
+                    <div class="graph-token-header">
+                      <span class="graph-token-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        1. Case Origin
+                      </span>
+                      <span id="token-case-count" class="graph-token-badge tag-case">1 Genesis Root</span>
+                    </div>
+                    <p class="graph-token-desc">Master case identity anchored to Section 65B certified legal root.</p>
+                  </div>
+
+                  <div class="graph-token-card">
+                    <div class="graph-token-header">
+                      <span class="graph-token-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+                        2. Source Evidence
+                      </span>
+                      <span id="token-source-count" class="graph-token-badge tag-source">Exhibits &amp; CCTV</span>
+                    </div>
+                    <p class="graph-token-desc">Raw surveillance feeds &amp; photos with immutable SHA-256 hashes.</p>
+                  </div>
+
+                  <div class="graph-token-card">
+                    <div class="graph-token-header">
+                      <span class="graph-token-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+                        3. AI Entities &amp; Tracks
+                      </span>
+                      <span id="token-track-count" class="graph-token-badge tag-track">YOLOv8 Entities</span>
+                    </div>
+                    <p class="graph-token-desc">Spatiotemporal tracks of detected persons and vehicles across cameras.</p>
+                  </div>
+
+                  <div class="graph-token-card">
+                    <div class="graph-token-header">
+                      <span class="graph-token-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                        4. Forensic Events
+                      </span>
+                      <span id="token-event-count" class="graph-token-badge tag-event">Triage Alerts</span>
+                    </div>
+                    <p class="graph-token-desc">High-priority anomalous actions, boundary breaches &amp; suspicious movements.</p>
+                  </div>
+
+                  <div class="graph-token-card">
+                    <div class="graph-token-header">
+                      <span class="graph-token-title">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                        5. Evidence DAG
+                      </span>
+                      <span id="token-link-count" class="graph-token-badge tag-dag">Court Traceable</span>
+                    </div>
+                    <p class="graph-token-desc">Solid = Detected Facts. Dashed = AI Associations. 100% auditable chain.</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Token Cards: Event & Correlation Nexus Connections -->
+              <div class="graph-correlations-section" id="graph-correlations-section">
+                <div class="graph-correlations-header">
+                  <div class="graph-correlations-title">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                    <span style="font-weight:700;font-size:0.8rem;letter-spacing:0.02em;">Event &harr; Correlation Nexus Links</span>
+                    <span class="graph-token-badge tag-event" id="event-correlation-count">0 Connections</span>
+                  </div>
+                  <div class="graph-correlations-controls">
+                    <label for="corr-type-filter" class="corr-filter-label" style="font-size:0.7rem;color:var(--text-muted);font-family:var(--font-mono);">Filter:</label>
+                    <select id="corr-type-filter" class="corr-filter-select" aria-label="Filter correlation links by type">
+                      <option value="all">All Correlation Types</option>
+                      <option value="temporal_proximity">Temporal Proximity</option>
+                      <option value="cross_camera_related_event">Cross-Camera Related</option>
+                      <option value="sequential_movement">Sequential Movement</option>
+                      <option value="same_camera_sequence">Same Camera Sequence</option>
+                    </select>
+                    <span class="corr-hint text-muted" style="font-size:0.68rem;font-family:var(--font-mono);">&bull; Click card to highlight</span>
+                  </div>
+                </div>
+                <div class="graph-correlation-cards-scroll" id="graph-correlation-cards-container">
+                  <!-- Dynamically populated via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: FORENSIC TIMELINE (INDIAN STANDARD TIME) -->
+      <section class="tab-pane" id="pane-timeline">
+        <div class="glass-panel full-height">
+          <div class="panel-header">
+            <div>
+              <h2>Unified Chronological Timeline (IST)</h2>
+              <p class="panel-desc">All evidentiary events synchronized and normalized to Indian Standard Time (IST • UTC+05:30) with date, day of week, and millisecond precision.</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+              <span class="badge badge-cyan" style="font-size:0.75rem;padding:0.35rem 0.75rem;display:flex;align-items:center;gap:0.35rem;">
+                <span>🇮🇳</span> IST (UTC+05:30)
+              </span>
+              <span class="badge badge-info" id="timeline-count-badge">0 Entries</span>
+            </div>
+          </div>
+
+          <!-- Timeline Filters -->
+          <div class="timeline-filter-bar" style="display:flex;gap:0.75rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center;background:rgba(15,23,42,0.6);padding:0.75rem;border-radius:var(--radius-md);border:1px solid var(--border-subtle);">
+            <div style="flex:1;min-width:200px;">
+              <input type="text" id="timeline-search-input" class="text-input" placeholder="🔍 Search timeline by file, description, or event type..." style="width:100%;">
+            </div>
+            <div style="min-width:180px;">
+              <select id="timeline-type-filter" class="select-input" style="width:100%;">
+                <option value="all">All Event Categories</option>
+                <option value="file_created">File Created</option>
+                <option value="file_modified">File Modified</option>
+                <option value="person_entered">Person Entered</option>
+                <option value="movement_detected">Movement Detected</option>
+                <option value="prolonged_presence">Prolonged Presence</option>
+                <option value="anomaly">Anomalies & Bursts</option>
+                <option value="usb_event">USB & Removable Media</option>
+              </select>
+            </div>
+            <div style="min-width:150px;">
+              <select id="timeline-sort-order" class="select-input" style="width:100%;">
+                <option value="asc">Earliest First (Ascending)</option>
+                <option value="desc">Latest First (Descending)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="timeline-container" id="timeline-container">
+            <!-- Populated via JS with Indian Date & Day Cards -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: INTEGRITY & LEDGER -->
+      <section class="tab-pane" id="pane-integrity">
+        <div class="content-grid-2col">
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>Chain of Custody History</h2>
+              <span class="badge badge-success" id="chain-status-badge">CHAIN_VALID</span>
+            </div>
+            <div class="chain-list" id="chain-entries-list">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>Private Evidence Ledger (Hash-Linked Blocks)</h2>
+              <span class="badge badge-success" id="ledger-status-badge">CHAIN_VALID</span>
+            </div>
+            <div class="ledger-list" id="ledger-blocks-list">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: ML INTELLIGENCE -->
+      <section class="tab-pane" id="pane-ml">
+        <div class="content-grid-2col">
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>Model Specification & Calibration</h2>
+              <span class="badge badge-cyan" id="ml-mode-badge">UNSUPERVISED</span>
+            </div>
+            <div class="ml-spec-content" id="ml-spec-content">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2>Anomaly Score & Triage Distribution</h2>
+              <span class="badge badge-info">Evaluation Metrics</span>
+            </div>
+            <div class="ml-metrics-content" id="ml-metrics-content">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 9: SECURE ERASURE -->
+      <section class="tab-pane" id="pane-sanitization">
+        <div class="glass-panel">
+          <div class="panel-header">
+            <h2>Safe Test-Only Evidence Erasure Workflow</h2>
+            <span class="badge badge-danger">TEST COPIES ONLY</span>
+          </div>
+          <div class="sanitization-body">
+            <div class="alert-box alert-warning">
+              <strong>CRITICAL SAFETY POLICY:</strong> ForensicLens strictly forbids the erasure or modification of original source evidence (e.g. <code>dataset/raw</code>). Any attempt to sanitize source files is instantly blocked.
+            </div>
+
+            <div class="form-group">
+              <label for="sanitization-path">Target File Path (Must be outside protected source evidence):</label>
+              <input type="text" id="sanitization-path" class="text-input" placeholder="e.g. scratch_sanitization_test/test_copy.tmp" value="scratch_sanitization_test/sample_test_evidence.tmp">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="sanitization-method">Sanitization Standard:</label>
+                <select id="sanitization-method" class="select-input">
+                  <option value="NIST_SP_800_88_CLEAR">NIST SP 800-88 Rev 1 Clear (Single-pass pseudorandom + sync)</option>
+                  <option value="DOD_5220_22_M_3_PASS">DoD 5220.22-M (3-Pass: 0x00, 0xFF, random + sync)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="sanitization-operator">Investigator / Operator ID:</label>
+                <input type="text" id="sanitization-operator" class="text-input" value="ForensicInvestigator_SIH">
+              </div>
+            </div>
+
+            <div class="action-buttons-row">
+              <button class="btn btn-primary" id="run-sanitization-btn">Execute Safe Test Sanitization</button>
+              <button class="btn btn-danger" id="test-refusal-btn">Test Source Protection Refusal</button>
+            </div>
+
+            <div class="sanitization-result-area" id="sanitization-result-area" style="display:none;">
+              <h3>Erasure Result & Certificate</h3>
+              <pre id="sanitization-cert-output"></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 10: LIVE USB & REMOVABLE MEDIA FORENSIC MONITOR -->
+      <section class="tab-pane" id="pane-usb">
+        <!-- Live USB Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon cyan">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13v-2M14 13v-2M7 10h10v7a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-7Z"/><path d="M10 10V5a2 2 0 0 1 4 0v5"/></svg>
+            </div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-usb-connected-count">0</span>
+              <span class="metric-label">Active Removable Devices</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-usb-files-created">0</span>
+              <span class="metric-label">Files Created</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon amber">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-usb-files-modified">0</span>
+              <span class="metric-label">Files Modified</span>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon red">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            </div>
+            <div class="metric-content">
+              <span class="metric-value" id="stat-usb-files-deleted">0</span>
+              <span class="metric-label">Files Deleted</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Instant Activity Ticker Banner -->
+        <div class="usb-live-alert-banner" id="usb-live-alert-banner">
+          <div class="usb-alert-pulse"></div>
+          <div class="usb-alert-content">
+            <span class="usb-alert-tag">⚡ LIVE USB ACTIVITY TICKER</span>
+            <span class="usb-alert-text" id="usb-live-alert-text">Listening for real-time USB plug/unplug and file modifications...</span>
+          </div>
+          <span class="usb-alert-time" id="usb-live-alert-time">LIVE</span>
+        </div>
+
+        <div class="content-grid-2col" style="margin-top:1rem;">
+          <!-- Active USB Devices Card with Embedded File Change Feed -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Connected Removable Storage & Drive Activity</h2>
+                <p class="panel-desc">Real-time drive telemetry & file modifications on connected media.</p>
+              </div>
+              <span class="badge badge-success" id="usb-monitor-status-badge">LISTENING (1.5s)</span>
+            </div>
+            <div class="usb-device-container" id="usb-devices-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Real-Time Activity Feed & Simulation Actions -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Live Instant Activity Stream</h2>
+                <p class="panel-desc">Real-time feed of all file operations with timestamps.</p>
+              </div>
+              <span class="badge badge-cyan" id="usb-stream-badge">REAL-TIME</span>
+            </div>
+            <div class="usb-controls-body">
+              <div class="usb-live-stream-feed" id="usb-live-stream-feed">
+                <!-- Rendered via JS -->
+              </div>
+
+              <div class="usb-actions-divider"></div>
+
+              <div class="panel-header" style="padding:0;margin-bottom:0.5rem;">
+                <h3 style="font-size:0.95rem;">Investigation Controls & Simulation</h3>
+              </div>
+              <div class="action-buttons-row" style="margin-bottom: 0.75rem;">
+                <button class="btn btn-primary" id="btn-usb-simulate">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  Simulate USB Activity (Demo)
+                </button>
+                <button class="btn btn-secondary" id="btn-usb-toggle-monitor">Pause Monitor</button>
+              </div>
+
+              <div class="form-group" style="margin-top:0.5rem;">
+                <label>Add Custom Local Folder to Watch:</label>
+                <div class="input-with-button">
+                  <input type="text" id="custom-watch-input" class="text-input" placeholder="e.g. D:\ or dataset\usb_test" value="dataset/usb_test">
+                  <button class="btn btn-secondary" id="btn-add-custom-watch">Watch Folder</button>
+                </div>
+              </div>
+
+              <div class="export-buttons" style="margin-top:0.75rem;">
+                <a href="/api/usb/export/markdown" class="btn btn-secondary" download>Export USB Audit (.md)</a>
+                <a href="/api/usb/export/csv" class="btn btn-secondary" download>Export CSV (.csv)</a>
+                <a href="/api/usb/export/json" class="btn btn-secondary" download>Export JSON (.json)</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Forensic Event Stream Table -->
+        <div class="glass-panel full-height" style="margin-top:1rem;">
+          <div class="panel-header">
+            <div>
+              <h2>Real-Time Removable Media Event Stream & Cryptographic Log</h2>
+              <p class="panel-desc">Every creation, modification, deletion, and connection event is hash-linked in a tamper-evident audit ledger.</p>
+            </div>
+            <div class="table-controls">
+              <div class="filter-pills" id="usb-event-filters">
+                <button class="filter-pill active" data-filter="ALL">All Events</button>
+                <button class="filter-pill" data-filter="USB_DEVICE_CONNECTED">Connected</button>
+                <button class="filter-pill" data-filter="USB_DEVICE_DISCONNECTED">Disconnected</button>
+                <button class="filter-pill" data-filter="FILE_CREATED">Created</button>
+                <button class="filter-pill" data-filter="FILE_MODIFIED">Modified</button>
+                <button class="filter-pill" data-filter="FILE_DELETED">Deleted</button>
+              </div>
+              <input type="text" id="usb-event-search" placeholder="Search events, files, or hashes..." class="search-input">
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="evidence-table">
+              <thead>
+                <tr>
+                  <th>Event ID</th>
+                  <th>Timestamp (Local)</th>
+                  <th>Event Type</th>
+                  <th>Drive / Device</th>
+                  <th>File / Relative Path</th>
+                  <th>Size</th>
+                  <th>Cryptographic SHA-256 Hash</th>
+                  <th>Forensic Block Hash</th>
+                </tr>
+              </thead>
+              <tbody id="usb-events-table-body">
+                <!-- Rendered via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB: LIVE CAMERA SURVEILLANCE -->
+      <section class="tab-pane" id="pane-live-camera">
+        <!-- TOP THREAT ALERT BANNER -->
+        <div id="live-threat-alert-banner" class="threat-alert-banner" style="margin-bottom:1rem;padding:0.75rem 1rem;background:rgba(15,23,42,0.9);border:1px solid rgba(56,189,248,0.25);border-radius:var(--radius-md);line-height:1.45;">
+          <div style="font-size:0.78rem;color:#94a3b8;margin-bottom:0.25rem;">
+            Threat model reused from local file. Supported classes: Gun, explosion, grenade, knife. Phone-screen demo is supported. Investigator verification is required
+          </div>
+          <div id="threat-banner-active-box" style="display:none;background:rgba(220,38,38,0.18);border:1px solid #ef4444;border-radius:6px;padding:0.5rem 0.75rem;margin-top:0.35rem;">
+            <div style="font-size:1.05rem;font-weight:800;color:#ffffff;letter-spacing:0.02em;display:flex;align-items:center;gap:0.4rem;">
+              <span>🚨</span> <span>POTENTIAL THREAT DETECTED</span>
+            </div>
+            <div id="threat-banner-subtext" style="font-size:0.82rem;color:#e2e8f0;margin-top:0.25rem;">
+              Object: Gun · Confidence: 93% · Camera: Live CCTV 01 · Timestamp: --:--:-- · AI-Assisted Security Alert
+            </div>
+          </div>
+        </div>
+
+        <div class="video-workspace-grid">
+          <div class="glass-panel video-player-card">
+            <div class="panel-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">
+              <div>
+                <h2 style="margin:0 0 0.2rem 0;">Live Camera Stream</h2>
+                <p class="panel-desc" style="margin:0;">Source: 0 &bull; Live CCTV 01</p>
+              </div>
+              <div class="table-controls" style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;">
+                <span class="badge badge-cyan" id="live-threat-classes-badge" style="background:rgba(14,165,233,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.3);font-size:0.75rem;font-weight:600;padding:0.3rem 0.65rem;border-radius:9999px;">
+                  Threat classes: Gun, explosion, grenade, knife
+                </span>
+                <span class="badge badge-cyan" id="live-cam-status-badge" style="display:none;">CAMERA STANDBY</span>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-bottom:0.75rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+              <button id="btn-start-live-cam" class="btn btn-primary" style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+                <span>START LIVE CCTV</span>
+              </button>
+              <button id="btn-stop-live-cam" class="btn btn-secondary" style="display:flex;align-items:center;gap:0.4rem;font-weight:700;" disabled>
+                <span>STOP LIVE CCTV</span>
+              </button>
+              <button id="btn-snapshot-live-cam" class="btn btn-secondary" style="display:flex;align-items:center;gap:0.4rem;font-weight:700;" title="Capture forensic evidence snapshot">
+                <span>CAPTURE EVIDENCE</span>
+              </button>
+              <button id="btn-clear-live-events" class="btn btn-secondary" style="display:flex;align-items:center;gap:0.4rem;font-weight:700;">
+                <span>CLEAR ALERTS</span>
+              </button>
+              <button id="btn-simulate-live-cam" class="btn btn-secondary" style="display:none;" title="Simulate live detection on sample CCTV video">
+                <span>Simulate Feed (Demo)</span>
+              </button>
+            </div>
+
+            <div class="video-container" id="live-cam-container" style="position:relative;background:#000000;overflow:hidden;border-radius:var(--radius-md);border:1px solid rgba(56,189,248,0.25);min-height:360px;">
+              <!-- Hidden video element capturing WebRTC stream -->
+              <video id="live-camera-video" playsinline autoplay muted style="display:none;"></video>
+              <!-- Live Canvas rendering feed and bounding boxes -->
+              <canvas id="live-camera-canvas" style="width:100%;height:100%;object-fit:contain;display:block;"></canvas>
+
+              <!-- Video Top-Left HUD -->
+              <div id="live-cam-hud-overlay" style="position:absolute;top:10px;left:10px;background:rgba(8,12,20,0.85);padding:0.4rem 0.65rem;border-radius:4px;border:1px solid rgba(245,158,11,0.4);font-family:'JetBrains Mono',monospace;z-index:3;pointer-events:none;display:none;">
+                <div style="font-weight:800;color:#f59e0b;font-size:0.85rem;letter-spacing:0.04em;">LIVE CCTV</div>
+                <div style="font-size:0.7rem;color:#cbd5e1;margin-top:2px;">
+                  Camera: 01 &nbsp; Status: <span style="color:#10b981;font-weight:700;">ONLINE</span> &nbsp; FPS: <span id="live-hud-fps">29.4</span>
+                </div>
+              </div>
+
+              <!-- Bottom Threat Alert Box (matching reference image) -->
+              <div id="live-threat-bottom-box" style="display:none;position:absolute;bottom:12px;left:12px;right:12px;background:#dc2626;color:#ffffff;padding:0.65rem 1rem;border-radius:4px;box-shadow:0 4px 15px rgba(220,38,38,0.5);z-index:5;pointer-events:none;">
+                <div style="font-size:1.15rem;font-weight:800;letter-spacing:0.03em;text-transform:uppercase;line-height:1.2;">
+                  POTENTIAL THREAT DETECTED
+                </div>
+                <div id="live-threat-bottom-details" style="font-size:0.85rem;font-weight:500;margin-top:3px;opacity:0.95;">
+                  Object: Gun &nbsp; Confidence: 93% &nbsp; 07:00:13
+                </div>
+              </div>
+
+              <!-- Standby overlay banner -->
+              <div id="live-camera-placeholder" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:rgba(8,12,20,0.92);color:var(--text-muted);text-align:center;padding:2rem;z-index:4;">
+                <div style="width:60px;height:60px;border-radius:50%;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);display:flex;align-items:center;justify-content:center;color:var(--accent-cyan);">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                </div>
+                <div>
+                  <h3 style="color:#ffffff;margin:0 0 0.35rem 0;font-size:1.05rem;">Live CCTV Surveillance Standby</h3>
+                  <p style="font-size:0.82rem;max-width:440px;margin:0;line-height:1.4;color:var(--text-secondary);">Click <strong>"START LIVE CCTV"</strong> to activate optical surveillance with real-time neural threat detection (Gun, Explosion, Grenade, Knife).</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Subtext under video -->
+            <div id="live-cam-stream-status" style="margin-top:0.5rem;font-size:0.8rem;color:#94a3b8;">
+              <span id="live-cam-stream-status-text">Starting camera and loading models...</span>
+            </div>
+            <div id="live-cam-detection-subtext" style="font-size:0.75rem;color:var(--text-muted);margin-top:2px;">
+              No live detections yet.
+            </div>
+
+            <div class="video-metadata-bar" id="live-cam-meta-bar" style="margin-top:0.6rem;padding:0.45rem 0.75rem;background:rgba(15,23,42,0.75);border:1px solid var(--border-subtle);border-radius:var(--radius-sm);font-size:0.75rem;display:flex;flex-wrap:wrap;gap:0.85rem;color:var(--text-secondary);">
+              <span><strong>Neural Engine:</strong> YOLOv8 + ResNet Threat Classifier</span>
+              <span><strong>Filter Policy:</strong> &ge; 80.0% Confidence Only</span>
+              <span id="live-cam-fps"><strong>Inference:</strong> -- ms</span>
+              <span id="live-cam-time"><strong>IST Clock:</strong> --</span>
+              <span id="live-cam-objects-count"><strong>Active in View:</strong> 0</span>
+            </div>
+          </div>
+
+          <div class="glass-panel video-events-sidebar" style="display:flex;flex-direction:column;gap:1.25rem;">
+            <!-- Live Event / Alert Panel -->
+            <div>
+              <div class="panel-header" style="margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <h2 style="font-size:1rem;margin:0;">Live Event / Alert Panel</h2>
+                </div>
+                <span class="badge" id="live-detected-count-badge" style="background:#f59e0b;color:#000000;font-weight:700;font-size:0.75rem;padding:2px 8px;border-radius:4px;">0 Events</span>
+              </div>
+              <div class="event-markers-list" id="live-camera-event-markers" style="max-height:280px;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;">
+                <p class="panel-desc" id="no-live-detections-msg" style="padding:1.5rem 1rem;text-align:center;color:var(--text-muted);font-size:0.8rem;">
+                  No live events yet.
+                </p>
+              </div>
+            </div>
+
+            <!-- Captured Evidence -->
+            <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:0.85rem;">
+              <div class="panel-header" style="margin-bottom:0.6rem;">
+                <div>
+                  <h2 style="font-size:1rem;margin:0;">Captured Evidence</h2>
+                </div>
+              </div>
+              <div id="live-captured-evidence-list" style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;">
+                <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;padding:0.75rem 0;" id="no-live-evidence-msg">
+                  No forensic evidence captured yet. Click CAPTURE EVIDENCE or detect high-severity threats.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- TAB 12: FORENSIC REPORT -->
+      <section class="tab-pane" id="pane-report">
+        <div class="glass-panel full-height">
+          <div class="panel-header">
+            <div>
+              <h2>Standardized Forensic Case Report (SIH PS 26150)</h2>
+              <p class="panel-desc">Cryptographically signed, court-admissible forensic summary conforming to Section 65B Indian Evidence Act & ISO/IEC 27037 standards.</p>
+            </div>
+            <div class="export-buttons" style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <a href="/api/report/export/markdown" class="btn btn-primary" download="ForensicLens_Case_Report.md">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export Markdown (.md)
+              </a>
+              <a href="/api/report/export/html" class="btn btn-secondary" download="ForensicLens_Case_Report.html">Export HTML (.html)</a>
+              <a href="/api/report/export/json" class="btn btn-secondary" download="ForensicLens_Case_Report.json">Export JSON (.json)</a>
+            </div>
+          </div>
+          <div class="report-viewer-container" id="report-viewer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Background Overlay for Right-Side Half-Screen AI Drawer -->
+  <div class="drawer-overlay" id="drawer-overlay"></div>
+
+  <!-- Grounded Investigator Right-Side Half-Screen AI Agent Drawer -->
+  <div class="query-drawer" id="query-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span>Grounded Investigator Assistant</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span class="badge badge-cyan" style="font-size:0.7rem;">AI AGENT</span>
+        <button class="drawer-close" id="close-query-drawer-btn" title="Close Assistant (Esc)">✕</button>
+      </div>
+    </div>
+
+    <div class="drawer-quick-prompts">
+      <button class="quick-prompt-tag" data-query="What happened during the first minute?">First Minute</button>
+      <button class="quick-prompt-tag" data-query="Show all person events.">Person Events</button>
+      <button class="quick-prompt-tag" data-query="Which events have high review priority?">High Priority</button>
+      <button class="quick-prompt-tag" data-query="What is the integrity status of the source video?">Integrity</button>
+      <button class="quick-prompt-tag" data-query="Show the custody history of this evidence.">Custody</button>
+    </div>
+
+    <div class="query-chat-history" id="query-chat-history">
+      <div class="chat-message assistant">
+        <div class="msg-bubble">
+          Welcome to the Grounded Investigator Assistant. Ask questions substantiated directly by verified case evidence records.
+        </div>
+      </div>
+    </div>
+
+    <div class="query-input-bar">
+      <input type="text" id="query-input" placeholder="Ask a case question (e.g. 'Show high priority events', 'What happened in first minute?')...">
+      <button id="send-query-btn" class="btn btn-primary" style="padding:0.6rem 1.25rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span>Ask AI</span>
+      </button>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='app.js') if url_for is defined else '/static/app.js' }}?v=20260901_0246"></script>
+</body>
+</html>
